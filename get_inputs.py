@@ -5,12 +5,15 @@ import pandas as pd
 # FILESYSTEM
 ####################################################################################################
 
-def files_in_folder_byext (folder="", extensions=[".csv"], print_intermediate=True):
+def files_in_folder_byext (folder="", extensions=[".csv"], mode="with folders", print_intermediate=True):
     """
     Input: folder path (optional), list of valid extensions (optional).
+        Mode: 'with folders' 'without folders'.
     Objective: find files of certain extensions in the same folder.
     Output: list with filenames.
     """
+    # if mode == "with folders":
+    # elif mode == "without folders":
 
     if folder == "":
         # Find file(s) in same folder
@@ -18,42 +21,46 @@ def files_in_folder_byext (folder="", extensions=[".csv"], print_intermediate=Tr
     else:
         # Find file(s) in other folder
         files = os.listdir(folder)
-        files = [ folder+"\\"+f for f in files ]
+
+    filepaths = [ folder+"\\"+f for f in files ]
+    for e in extensions:
+        # Remove extension and change spaces into underscores
+        table_names = [ f.replace(e, "") for f in files ]
     if print_intermediate:
         print("Files in folder:", folder)
-        print("\nFiles:\n", files)
+        print("\nFiles:\n", filepaths)
 
     # Get a list with just file names
-    output_list  = []
+    file_names = []
 
     if extensions != "":
         for extension in extensions:
-            for file in files:
+            for file in filepaths:
                 if file.endswith(extension):
-                    output_list.append(file)
-        if len (output_list) == 0:
+                    file_names.append(file)
+        if len (file_names) == 0:
             if print_intermediate:
                 print("No file with the searched extensions were found.")
                 print("")
         else:
             if print_intermediate:
                 print("The following files with the searched extensions were found:")
-                pprint.pprint(output_list)
+                pprint.pprint(file_names)
                 print("")
     else:
         for file in files:
-            output_list.append(file)
+            file_names.append(file)
         if print_intermediate:
-            if len (output_list) == 0:
+            if len (file_names) == 0:
                 print("No files were found.")
                 print("")
             else:
                 print("The following files were found:")
-                pprint.pprint(output_list)
+                pprint.pprint(file_names)
                 print("")
 
 
-    return output_list
+    return file_names, table_names
 
 ####################################################################################################
 # READ FILES
@@ -96,7 +103,7 @@ def csv_to_dataframe(filename, delimiter=",", print_intermediate=True):
 
     return df
 
-def dataframe_to_dict(df, print_intermediate=True):
+def dataframe_to_listdict(df, print_intermediate=True):
     """
     Returns a list of dictionaries where the keys are the column names.
     Each item in the list will be one row.
@@ -121,7 +128,7 @@ def main(extensions=".csv", delimiter=",", print_intermediate=True):
     file_names = files_in_folder_byext(folder="data", extensions=extensions, print_intermediate=print_intermediate)
     for f in file_names:
         df = csv_to_dataframe(f, delimiter=delimiter, print_intermediate=print_intermediate)
-        dataframe_to_dict(df)
+        dataframe_to_listdict(df)
 
 if __name__ == '__main__':
     main()
