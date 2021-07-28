@@ -1,1 +1,3 @@
 *.csv
+database_history.txt
+*.sqlite
