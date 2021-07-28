@@ -82,14 +82,20 @@ def csv_to_dataframe(filename, delimiter=",", print_intermediate=True):
         if h[-1] == " ":
             h_ = h[:-1]
             df = df.rename(columns={h:h_})
+        if " " in h:
+            header_list[header_list.index(h)] = "\'"+h+"\'"
+            # Deal with columns with spaces in their names
+
     header_list = list(df.columns)
 
-    # Remove trailing blanks in values
+    # Remove trailing blanks in values, catch commas in numbers
     for h in header_list:
         for i in list(range(len(df.index))):
             value = str(df.iloc[i][h])
             if value[-1] == " ":
                 df.iat[i, df.columns.get_loc(h)] = value[:-1]
+            if "," in value:
+                df.iat[i, df.columns.get_loc(h)] = float(value.replace(",", "."))
 
     if print_intermediate:
         # Print what we got

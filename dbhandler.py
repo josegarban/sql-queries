@@ -3,6 +3,7 @@ Sqlite functions
 """
 
 import pprint, sqlite3
+import numpy as np
 
 ####################################################################################################
 # INSTRUCTION CREATION
@@ -30,11 +31,14 @@ def dictfieldnames_to_tuplist(input_dict):
     else                  : output_list.append(("id", "INTEGER PRIMARY KEY"))
 
     # Search all inner dictionaries in a dictionary
-    for fieldname in input_dict:  # It should not matter if the dictionary contains dictionaries or a list
-        if   type(fieldname) is int  : fieldtype = "INTEGER"
-        elif type(fieldname) is str  : fieldtype = "TEXT"
-        elif type(fieldname) is bool : fieldtype = "BINARY"
-        elif type(fieldname) is float: fieldtype = "REAL"
+    for fieldname in list(input_dict[0].keys()):  # It should not matter if the dictionary contains dictionaries or a list
+        v = input_dict[0][fieldname]
+        print (v, type(v))
+        if   type(v) is int      : fieldtype = "INTEGER"
+        elif type(v) is np.int64 : fieldtype = "INTEGER"
+        elif type(v) is str      : fieldtype = "TEXT"
+        elif type(v) is bool     : fieldtype = "BINARY"
+        elif type(v) is float    : fieldtype = "REAL"
         else : fieldtype = "TEXT"
         if   (fieldname, fieldtype) not in output_list : output_list.append((fieldname, fieldtype))
 
@@ -68,7 +72,9 @@ def dictfields_to_string(input_dict):
 
     output_string = ""
     for field_tup in field_list:
-        field_string = "{0} {1}, ".format(field_tup[0], field_tup[1])
+        h = field_tup[0]
+        if " " in h: h = "\'"+h+"\'"
+        field_string = "{0} {1}, ".format(h, field_tup[1])
         output_string = output_string + field_string
     output_string = "(" + output_string[:-2] + ")" # -2 to remove the last comma and space
 
@@ -129,13 +135,7 @@ def create_table(input_dict, sql_filename = "", sql_table = "", print_intermedia
     if sql_table == "": sql_table = input("Insert table name:")
 
     # When columns are in an inner dictionary, the column names are in the first row
-    first_row = input_dict[list(input_dict.keys())[0]]
-    fieldnames = [ "\'"+f+"\'" if " " in f else f for f in first_row ]
-    # Build the instruction to be executed to create the table
-    fieldnames_str = ""
-    for f in fieldnames: fieldnames_str += f+", "
-    fieldnames_str = "("+fieldnames_str[:-2]+")"
-    print (fieldnames_str)
+    fieldnames_str = dictfields_to_string(input_dict)
 
     # Build the instruction to be executed to create the table
     instruction = """CREATE TABLE IF NOT EXISTS {0} {1}""".format(sql_table, fieldnames_str)
@@ -164,6 +164,9 @@ def add_dbrows(input_dict,
     Outputs: string reporting changes.
     """
     output_string = ""
+    # Prevent numbers from being stored as blobs
+    sqlite3.register_adapter(np.int64, lambda val: int(val))
+    sqlite3.register_adapter(np.int32, lambda val: int(val))
 
     # Open the database and get the table name if none has been set
     my_connector = create_connector(sql_filename)
