@@ -1,3 +1,7 @@
 *.csv
 database_history.txt
 *.sqlite
+__pycache__
+*.txt
+*.xlsx
+*.json
