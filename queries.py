@@ -32,6 +32,8 @@ def perform_queries(queries=TEST_QUERIES, database="database.sqlite"):
         print(q[1])
         print("")
         cursor.execute(q[1])
+        names = [description[0] for description in cursor.description]
+        print(names)
         pprint.pprint(cursor.fetchall())
         print("#"*50)
 
