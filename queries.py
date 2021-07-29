@@ -5,7 +5,7 @@ TEST_QUERIES = [
     ("See all records in table Orders", "SELECT * FROM Orders"),
 ]
 
-def get_queries(jsonfilename="queries.json", print_intermediate=True):
+def get_queries(jsonfilename="queries.json", print_intermediate=False):
     """
     Make a list of tuples of the form (description, query) from an adjacent .json file
     """
@@ -13,7 +13,7 @@ def get_queries(jsonfilename="queries.json", print_intermediate=True):
         queries = json.load(json_file)
 
     queries = [ queries[k] for k in list(queries.keys()) ]
-    pprint.pprint("The following queries will be executed:\n{0}".format(queries))
+    if print_intermediate: pprint.pprint("The following queries will be executed:\n{0}".format(queries))
     return queries
 
 def perform_queries(queries=TEST_QUERIES, database="database.sqlite"):
@@ -40,7 +40,7 @@ def perform_queries(queries=TEST_QUERIES, database="database.sqlite"):
     return None
 
 def main():
-    queries = get_queries(print_intermediate=False)
+    queries = get_queries()
     perform_queries(queries)
 
 if __name__ == '__main__':
